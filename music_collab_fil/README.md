@@ -87,3 +87,90 @@ Number of users: 1892
 Number of artists: 17632
 Artist ID 1: MALICE MIZER
 ```
+### What Does the Output Mean?
+
+When you run the recommender system, you will see output like this:
+
+```
+User-item matrix shape: (1892, 17632)
+User index for user ID 2: 0
+Denise Rosenthal: 1.546019196510315
+Queen: 1.428629875183105
+Sam the Kid: 1.399303913116455
+Revis: 1.370678186416626
+Deaf Center: 1.282248616218567
+```
+
+**What does each line mean?**
+
+- **User item matrix shape: (1892, 17632)**
+  - This tells you the size of the data being used. There are 1,892 users and 17,632 artists in the system.
+  - Imagine a big table where each row is a user and each column is an artist.
+
+- **User index for user ID 2: 0**
+  - The system uses its own way to keep track of users, starting from 0. Here, user ID 2 is at position 0 in the system's list.
+
+- **Artist Name: Score** (for example, `Denise Rosenthal: 1.54`)
+  - These are the recommended artists for the user.
+  - The name before the colon is the artist the system thinks the user will like.
+  - The number after the colon is the recommendation score. Higher scores mean the system is more confident the user will like that artist.
+
+## Understanding the Output
+
+### Matrix Shape
+- `(1892, 17632)`: 1,892 users × 17,632 artists matrix
+- Each cell contains the listening count (weight) for user artist pairs
+
+### Recommendation Scores
+- **Higher scores** indicate stronger recommendations
+- Scores are based on the ALS algorithm's learned user and artist latent factors
+- Range typically: 0.5 - 2.0 
+
+### User Index Mapping
+- User IDs from the dataset are mapped to zero-based indices
+- Example: User ID 2 --> Index 0
+
+## How It Works
+
+### 1. Data Processing (`data.py`)
+```python
+# Load user-artist listening data
+user_artists, user_id_map, artist_id_map = load_user_artists(data_file)
+
+# Create sparse matrix for efficient computation
+# Shape: (users, artists) with listening counts as values
+```
+
+### 2. Artist Name Resolution (`data.py`)
+```python
+# Convert artist IDs to readable names
+artist_retriever = ArtistRetriever()
+artist_retriever.load_artists(artists_file)
+artist_name = artist_retriever.get_artist_name_from_id(artist_id)
+```
+
+### 3. Recommendation Engine (`recommender.py`)
+```python
+# Train ALS model
+model = implicit.als.AlternatingLeastSquares(
+    factors=50,      # Latent factors
+    iterations=10,   # Training iterations
+    regularization=0.01  # Regularization parameter
+)
+
+# Generate recommendations
+recommendations = recommender.recommend(user_index, matrix, n=5)
+```
+
+## Contributions 
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you'd like to change.
+
+## Acknowledgments
+
+- **Last.fm** for providing the dataset
+- **HetRec 2011** workshop for dataset curation
+
+## Contact
+
+For any queries or collaborations, feel free to reach me out at **saizen777999@gmail.com**
